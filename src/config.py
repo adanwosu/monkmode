@@ -29,6 +29,7 @@ class NotificationConfig:
     """Notification settings."""
     telegram_enabled: bool = True
     discord_enabled: bool = True
+    discord_role_id: str = ""  # Discord role ID to tag on alerts
     include_platforms: list[str] = field(default_factory=lambda: ["variational", "extended"])
 
 
@@ -78,6 +79,7 @@ class Config:
             notifications=NotificationConfig(
                 telegram_enabled=notif_data.get("telegram", {}).get("enabled", True),
                 discord_enabled=notif_data.get("discord", {}).get("enabled", True),
+                discord_role_id=notif_data.get("discord", {}).get("role_id", ""),
                 include_platforms=notif_data.get("include_platforms", ["variational", "extended"]),
             ),
             # Environment variables (Railway sets these)

@@ -11,8 +11,9 @@ log = structlog.get_logger()
 class DiscordNotifier(BaseNotifier):
     """Send alerts via Discord webhook."""
     
-    def __init__(self, webhook_url: str):
+    def __init__(self, webhook_url: str, role_id: str = ""):
         self.webhook_url = webhook_url
+        self.role_id = role_id  # Discord role ID to mention
     
     async def send(self, payload: AlertPayload) -> bool:
         """Send alert to Discord."""
@@ -20,9 +21,15 @@ class DiscordNotifier(BaseNotifier):
         
         try:
             async with aiohttp.ClientSession() as session:
+                # Build message with optional role mention
+                content = ""
+                if self.role_id:
+                    content = f"<@&{self.role_id}>"  # Discord role mention format
+                
                 data = {
                     "username": "Monk Mode",
                     "avatar_url": "https://em-content.zobj.net/source/apple/391/person-in-lotus-position_1f9d8.png",
+                    "content": content,  # Role tag appears above the embed
                     "embeds": [embed],
                 }
                 

@@ -65,9 +65,13 @@ class MonkPairTrader:
         
         if config.notifications.discord_enabled and config.discord_webhook_url:
             self.notifiers.append(
-                DiscordNotifier(config.discord_webhook_url)
+                DiscordNotifier(
+                    webhook_url=config.discord_webhook_url,
+                    role_id=config.notifications.discord_role_id,
+                )
             )
-            log.info("Discord notifier enabled")
+            role_info = f" (tagging role {config.notifications.discord_role_id})" if config.notifications.discord_role_id else ""
+            log.info(f"Discord notifier enabled{role_info}")
         
         # State tracking
         self._last_signal_time: dict[str, datetime] = {}

@@ -35,6 +35,9 @@ notifications:
     enabled: false
   discord:
     enabled: false
+    # Role ID to tag on alerts (right-click role → Copy ID)
+    # Leave empty to not tag anyone
+    role_id: ""
   
   # Which platforms to show prices for in alerts
   include_platforms:
