@@ -111,13 +111,22 @@ class Config:
         
         if self.notifications.telegram_enabled:
             if not self.telegram_bot_token:
-                errors.append("TELEGRAM_BOT_TOKEN is required when Telegram is enabled")
+                errors.append(
+                    f"TELEGRAM_BOT_TOKEN is required when Telegram is enabled. "
+                    f"Current value: '{os.getenv('TELEGRAM_BOT_TOKEN', '(not set)')}'"
+                )
             if not self.telegram_chat_id:
-                errors.append("TELEGRAM_CHAT_ID is required when Telegram is enabled")
+                errors.append(
+                    f"TELEGRAM_CHAT_ID is required when Telegram is enabled. "
+                    f"Current value: '{os.getenv('TELEGRAM_CHAT_ID', '(not set)')}'"
+                )
         
         if self.notifications.discord_enabled:
             if not self.discord_webhook_url:
-                errors.append("DISCORD_WEBHOOK_URL is required when Discord is enabled")
+                errors.append(
+                    f"DISCORD_WEBHOOK_URL is required when Discord is enabled. "
+                    f"Current value: '{os.getenv('DISCORD_WEBHOOK_URL', '(not set)')}'"
+                )
         
         if self.strategy.spread_threshold <= 0:
             errors.append("spread_threshold must be positive")
