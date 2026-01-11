@@ -32,9 +32,9 @@ strategy:
 
 notifications:
   telegram:
-    enabled: false
+    enabled: true
   discord:
-    enabled: false
+    enabled: true
     # Role ID to tag on alerts (right-click role → Copy ID)
     # Leave empty to not tag anyone
     role_id: ""
