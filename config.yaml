@@ -40,9 +40,9 @@ notifications:
     role_id: ""
   
   # Which platforms to show prices for in alerts
+  # Extended API currently down (Starknet migration)
   include_platforms:
     - variational
-    - extended
 
 # API Endpoints (can be overridden via environment variables)
 platforms:
