@@ -278,34 +278,35 @@ class MonkPairTrader:
         # Health check
         await self._check_health()
         
-        # Try Binance first, fallback to CoinGecko
-        initial_signal = await self.binance.get_current_prices()
+        # Try CoinGecko first (more accurate for DEX prices), fallback to Binance
+        self._use_coingecko = True
+        initial_signal = await self.coingecko.get_current_prices()
         
-        if initial_signal:
+        if initial_signal and not self.coingecko._rate_limited:
             log.info(
-                "Initial prices fetched from Binance",
+                "Initial prices fetched from CoinGecko",
                 btc=f"${initial_signal.btc.price:,.2f}",
                 eth=f"${initial_signal.eth.price:,.2f}",
                 spread=f"{initial_signal.spread_pct:+.2f}%",
             )
-            log.info("Starting Binance WebSocket stream...")
-            await self.binance.start_stream(on_update=self._on_price_update)
+            log.info("Starting CoinGecko polling (DEX-accurate prices)...")
+            await self.coingecko.start_polling(on_update=self._on_price_update)
         else:
-            # Binance unavailable, use CoinGecko
-            log.warning("Binance unavailable, falling back to CoinGecko")
-            self._use_coingecko = True
+            # CoinGecko unavailable or rate limited, use Binance
+            log.warning("CoinGecko unavailable, falling back to Binance WebSocket")
+            self._use_coingecko = False
             
-            initial_signal = await self.coingecko.get_current_prices()
+            initial_signal = await self.binance.get_current_prices()
             if initial_signal:
                 log.info(
-                    "Initial prices fetched from CoinGecko",
+                    "Initial prices fetched from Binance",
                     btc=f"${initial_signal.btc.price:,.2f}",
                     eth=f"${initial_signal.eth.price:,.2f}",
                     spread=f"{initial_signal.spread_pct:+.2f}%",
                 )
             
-            log.info("Starting CoinGecko polling...")
-            await self.coingecko.start_polling(on_update=self._on_price_update)
+            log.info("Starting Binance WebSocket stream...")
+            await self.binance.start_stream(on_update=self._on_price_update)
     
     def stop(self) -> None:
         """Stop the bot gracefully."""
