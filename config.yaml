@@ -3,7 +3,7 @@
 
 strategy:
   # Debug mode: true = show all price updates, false = only alerts
-  debug_mode: false
+  debug_mode: true
   
   # Minimum spread (%) to trigger a signal
   # Strategy 1: ETH outperforms BTC by >= this amount
