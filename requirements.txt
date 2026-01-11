@@ -1,0 +1,24 @@
+# Monk Mode - BTC/ETH Pair Trading Bot
+# Dependencies
+
+# Async HTTP client
+aiohttp>=3.9.0
+
+# WebSocket client
+websockets>=12.0
+
+# Telegram Bot API
+python-telegram-bot>=21.0
+
+# Discord webhooks
+discord-webhook>=1.3.0
+
+# Configuration
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Structured logging
+structlog>=24.0.0
+
+# Type hints backport (Python 3.9 compatibility)
+typing-extensions>=4.9.0

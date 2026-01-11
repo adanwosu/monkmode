@@ -1,0 +1,52 @@
+# Monk Mode - Strategy Configuration
+# Adjust these values to tune the trading signals
+
+strategy:
+  # Debug mode: true = show all price updates, false = only alerts
+  debug_mode: false
+  
+  # Minimum spread (%) to trigger a signal
+  # Strategy 1: ETH outperforms BTC by >= this amount
+  # Strategy 2: ETH underperforms BTC by >= this amount
+  spread_threshold: 2.0
+  
+  # Maximum spread to consider (avoid flash crash false signals)
+  spread_max: 8.0
+  
+  # Spread level to consider "normalized" for close signals
+  spread_close_threshold: 1.0
+  
+  # Notional position size per leg (for PnL estimates)
+  position_size_usd: 1000
+  
+  # Minimum profit target before suggesting close (USD)
+  take_profit_usd: 25
+  
+  # Cooldown between same-direction signals (seconds)
+  # Prevents spam when spread hovers around threshold
+  cooldown_sec: 300
+  
+  # How often to check prices via REST fallback (seconds)
+  # CoinGecko free tier: ~30 req/min, so 30s is safe
+  polling_interval_sec: 30
+
+notifications:
+  telegram:
+    enabled: false
+  discord:
+    enabled: false
+  
+  # Which platforms to show prices for in alerts
+  include_platforms:
+    - variational
+    - extended
+
+# API Endpoints (can be overridden via environment variables)
+platforms:
+  binance:
+    ws_url: "wss://stream.binance.com:9443/ws"
+    rest_url: "https://api.binance.com/api/v3"
+  variational:
+    rest_url: "https://omni-client-api.prod.ap-northeast-1.variational.io"
+  extended:
+    rest_url: "https://api.extended.exchange/api/v1"
