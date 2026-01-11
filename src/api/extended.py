@@ -23,7 +23,7 @@ class ExtendedAPI:
     
     async def get_prices(self) -> dict[str, PriceData]:
         """
-        Fetch BTC and ETH prices from Extended.
+        Fetch BTC and ETH prices from Extended (Starknet instance).
         
         Returns:
             Dict mapping symbol ("BTC", "ETH") to PriceData
@@ -32,68 +32,47 @@ class ExtendedAPI:
         
         try:
             async with aiohttp.ClientSession() as session:
-                url = f"{self.base_url}/markets"
+                # Starknet API endpoint - get both markets in one call
+                url = f"{self.base_url}/info/markets?market=BTC-USD&market=ETH-USD"
                 
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
                     if resp.status != 200:
                         log.warning("Extended API error", status=resp.status)
                         return prices
                     
-                    data = await resp.json()
+                    response = await resp.json()
                     
-                    # Handle both list and dict response formats
-                    markets = data if isinstance(data, list) else data.get("markets", [])
+                    # Starknet API format: {"status": "OK", "data": [...]}
+                    if response.get("status") != "OK":
+                        log.warning("Extended API returned error", response=response)
+                        return prices
+                    
+                    markets = response.get("data", [])
                     
                     for market in markets:
                         try:
-                            symbol = market.get("symbol", "")
+                            # Market name format: "BTC-USD", "ETH-USD"
+                            name = market.get("name", "")
                             
-                            # Match BTC-PERP, BTCUSDT, etc.
-                            if "BTC" in symbol.upper():
+                            if name == "BTC-USD":
                                 ticker = "BTC"
-                            elif "ETH" in symbol.upper():
+                            elif name == "ETH-USD":
                                 ticker = "ETH"
                             else:
                                 continue
                             
-                            # Skip if we already have this ticker (take first match)
-                            if ticker in prices:
-                                continue
+                            stats = market.get("marketStats", {})
                             
-                            # Try various field names for price
-                            price = (
-                                market.get("markPrice") or 
-                                market.get("mark_price") or
-                                market.get("lastPrice") or
-                                market.get("last_price") or
-                                market.get("price")
-                            )
-                            
+                            price = stats.get("lastPrice")
                             if not price:
                                 continue
                             
-                            # Try various field names for 24h change
-                            change_24h = (
-                                market.get("priceChangePercent24h") or
-                                market.get("price_change_percent_24h") or
-                                market.get("change24h") or
-                                0.0
-                            )
+                            change_24h = stats.get("dailyPriceChangePercentage", 0)
+                            bid = stats.get("bidPrice")
+                            ask = stats.get("askPrice")
+                            volume = stats.get("dailyVolume", 0)
+                            funding = stats.get("fundingRate")
                             
-                            # Try various field names for bid/ask
-                            bid = market.get("bestBid") or market.get("best_bid") or market.get("bid")
-                            ask = market.get("bestAsk") or market.get("best_ask") or market.get("ask")
-                            
-                            # Try various field names for volume
-                            volume = (
-                                market.get("volume24h") or
-                                market.get("volume_24h") or
-                                market.get("quoteVolume24h") or
-                                0.0
-                            )
-                            
-                            # Try various field names for funding rate
-                            funding = market.get("fundingRate") or market.get("funding_rate")
                             if funding:
                                 funding = float(funding) * 100  # Convert to %
                             
@@ -112,7 +91,7 @@ class ExtendedAPI:
                         except (KeyError, ValueError, TypeError) as e:
                             log.warning(
                                 "Failed to parse Extended market",
-                                symbol=market.get("symbol"),
+                                name=market.get("name"),
                                 error=str(e)
                             )
                             continue
@@ -128,8 +107,11 @@ class ExtendedAPI:
         """Check if Extended API is reachable."""
         try:
             async with aiohttp.ClientSession() as session:
-                url = f"{self.base_url}/markets"
+                url = f"{self.base_url}/info/markets?market=BTC-USD"
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=5)) as resp:
-                    return resp.status == 200
+                    if resp.status == 200:
+                        data = await resp.json()
+                        return data.get("status") == "OK"
+                    return False
         except Exception:
             return False
